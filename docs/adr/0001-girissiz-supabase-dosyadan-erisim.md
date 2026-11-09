@@ -19,3 +19,7 @@ Uygulamada giriş yok. Sayfa Supabase publishable (anon) key ile doğrudan `todo
 
 - Key'i ele geçiren herkes listeyi okuyup değiştirebilir. Key yalnızca kullanıcının bilgisayarındaki dosyada durduğu için bu risk kabul edildi.
 - Uygulama ileride paylaşılırsa ya da yayınlanırsa bu karar yeniden ele alınmalı: Auth eklenir ve politikalar `auth.uid()` ile kısıtlanır.
+
+## Güncelleme (2026-11-09)
+
+Uygulama GitHub Pages ile yayınlandı; `js/config.js` repoda ve sitede herkese açık. Sitenin URL'sini bilen herkesin listeyi okuyup değiştirebileceği risk, Auth eklemeden bilerek kabul edildi.
