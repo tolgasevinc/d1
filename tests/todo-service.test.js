@@ -199,3 +199,15 @@ describe('Store hatası', () => {
     }
   });
 });
+
+describe('eşzamanlı işlemler', () => {
+  it('beklemeden art arda iki toggle sırayla işlenir: ikincisi birincisini geri alır', async () => {
+    const { service } = setup();
+    await service.load();
+    await service.add({ title: 'a' });
+    const id = service.todos()[0].id;
+    await Promise.all([service.toggle(id), service.toggle(id)]);
+    expect(service.todos()[0].done).toBe(false);
+    expect(service.todos()[0].completedAt).toBe(null);
+  });
+});

@@ -33,6 +33,15 @@
       return a.createdAt < b.createdAt ? -1 : a.createdAt > b.createdAt ? 1 : 0;
     }
 
+    /** Değiştiren işlemler sırayla çalışır; böylece her biri güncel durumdan hesaplanır. */
+    let chain = Promise.resolve();
+    /** @template T @param {() => Promise<T>} fn @returns {Promise<T>} */
+    function serial(fn) {
+      const p = chain.then(fn);
+      chain = p.then(() => {}, () => {});
+      return p;
+    }
+
     /** @param {string} id @param {any} patch */
     async function patchItem(id, patch) {
       const updated = await store.update(id, patch);
@@ -42,7 +51,7 @@
     return {
       async load() { items = await store.list(); },
       /** @param {{ title: string, dueDate?: string|null, priority?: Todo['priority'] }} input */
-      async add(input) {
+      add(input) { return serial(async () => {
         const title = normalizeTitle(input.title);
         const created = await store.insert({
           title,
@@ -52,31 +61,31 @@
           completedAt: null,
         });
         items = items.concat(created);
-      },
+      }); },
       /** @param {string} id */
-      async toggle(id) {
+      toggle(id) { return serial(async () => {
         const cur = items.find((t) => t.id === id);
         if (!cur) throw new Error('Todo bulunamadı');
         await patchItem(id, cur.done ? { done: false, completedAt: null } : { done: true, completedAt: now() });
-      },
+      }); },
       /** @param {string} id @param {{ title?: string, dueDate?: string|null, priority?: Todo['priority'] }} input */
-      async edit(id, input) {
+      edit(id, input) { return serial(async () => {
         /** @type {any} */
         const patch = {};
         if (input.title !== undefined) patch.title = normalizeTitle(input.title);
         if (input.dueDate !== undefined) patch.dueDate = input.dueDate || null;
         if (input.priority !== undefined) patch.priority = input.priority;
         await patchItem(id, patch);
-      },
+      }); },
       /** @param {string} id */
-      async remove(id) {
+      remove(id) { return serial(async () => {
         await store.remove(id);
         items = items.filter((t) => t.id !== id);
-      },
-      async clearCompleted() {
+      }); },
+      clearCompleted() { return serial(async () => {
         await store.removeCompleted();
         items = items.filter((t) => !t.done);
-      },
+      }); },
       remainingCount() { return items.filter((t) => !t.done).length; },
       completedCount() { return items.filter((t) => t.done).length; },
       todos() {

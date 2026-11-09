@@ -11,5 +11,6 @@
     "skipLibCheck": true,
     "types": ["node"]
   },
-  "include": ["js/**/*.js"]
+  "include": ["js/**/*.js"],
+  "exclude": ["js/config.js"]
 }

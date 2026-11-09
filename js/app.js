@@ -18,8 +18,12 @@
   }
 
   const cfg = g.TODO_CONFIG;
-  const client = g.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_KEY);
-  const store = g.createSupabaseTodoStore(client);
+  // CDN yüklenemediyse (ör. internet yokken açıldı) sayfa yine de bandı göstermeli.
+  const hasSdk = !!(g.supabase && g.supabase.createClient);
+  const failing = () => Promise.reject(Object.assign(new Error('Supabase kitaplığı yüklenemedi'), { kind: 'network' }));
+  const store = hasSdk
+    ? g.createSupabaseTodoStore(g.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_KEY))
+    : { list: failing, insert: failing, update: failing, remove: failing, removeCompleted: failing };
   const service = g.createTodoService(store, { today: localToday });
 
   /** 'online' | 'offline' | 'paused' | 'error' */
@@ -29,7 +33,7 @@
   const BANNERS = {
     offline: 'Bağlantı yok. İnternet gelene kadar değişiklik yapılamaz.',
     paused: "Supabase projesi duraklatılmış olabilir. supabase.com panelinden 'Restore' ile açın.",
-    error: 'Sunucuya ulaşılamadı. Biraz sonra sayfayı yenileyin.',
+    error: "Sunucuya ulaşılamadı. Supabase projesi duraklatılmış olabilir: supabase.com panelinden 'Restore' ile açın. Otomatik olarak yeniden denenecek.",
   };
 
   /** @param {any} e */
@@ -159,8 +163,21 @@
   });
 
   window.addEventListener('offline', () => { status = 'offline'; render(); });
-  window.addEventListener('online', () => { status = 'online'; reload(); });
+  window.addEventListener('online', () => {
+    if (!hasSdk) { location.reload(); return; }
+    status = 'online';
+    reload();
+  });
+
+  // 'error'/'paused' durumundan tarayıcı olayı olmadan çıkış: 10 sn'de bir yeniden dene.
+  setInterval(() => {
+    if (status === 'error' || status === 'paused') {
+      if (!hasSdk) { if (navigator.onLine) location.reload(); return; }
+      reload();
+    }
+  }, 10000);
 
   render();
-  if (navigator.onLine) reload();
+  if (!hasSdk) { status = navigator.onLine ? 'error' : 'offline'; render(); }
+  else if (navigator.onLine) reload();
 })();
