@@ -2,8 +2,59 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Todo</title>
+<style>
+  :root { --kirmizi: #c62828; --gri: #6b7280; --mavi: #2563eb; }
+  * { box-sizing: border-box; }
+  body { font: 16px/1.4 -apple-system, system-ui, sans-serif; max-width: 640px; margin: 0 auto; padding: 24px 16px; color: #111; background: #f8fafc; }
+  h1 { margin: 0 0 16px; }
+  #banner { padding: 10px 14px; border-radius: 8px; margin-bottom: 12px; background: #fee2e2; color: var(--kirmizi); font-weight: 600; }
+  #banner[hidden] { display: none; }
+  form { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+  form input[type=text] { flex: 1 1 200px; text-transform: uppercase; }
+  input, select, button { font: inherit; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 8px; background: #fff; }
+  button { cursor: pointer; }
+  button:disabled, input:disabled, select:disabled { opacity: .5; cursor: not-allowed; }
+  ul { list-style: none; margin: 0; padding: 0; }
+  li { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 6px; }
+  li .title { flex: 1; }
+  li.done .title { text-decoration: line-through; color: var(--gri); }
+  li.overdue { border-color: var(--kirmizi); }
+  li.overdue .title, li.overdue .due { color: var(--kirmizi); font-weight: 600; }
+  .due, .prio { font-size: 13px; color: var(--gri); }
+  .editor { display: flex; gap: 6px; flex: 1; flex-wrap: wrap; }
+  .editor input[type=text] { flex: 1 1 160px; text-transform: uppercase; }
+  footer { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; color: var(--gri); }
+  #empty { text-align: center; color: var(--gri); padding: 24px; }
+  #error { color: var(--kirmizi); margin: 8px 0; min-height: 1.4em; }
+</style>
 </head>
 <body>
+<h1>Yapılacaklar</h1>
+<div id="banner" hidden></div>
+<form id="add-form">
+  <input type="text" id="title" placeholder="Yeni iş…" autocomplete="off">
+  <input type="date" id="due" title="Son tarih">
+  <select id="priority" title="Öncelik">
+    <option value="dusuk">Düşük</option>
+    <option value="orta" selected>Orta</option>
+    <option value="yuksek">Yüksek</option>
+  </select>
+  <button type="submit" id="add-btn">Ekle</button>
+</form>
+<div id="error" role="alert"></div>
+<ul id="list"></ul>
+<div id="empty" hidden>Henüz iş yok. Yukarıdan ilk işini ekle.</div>
+<footer>
+  <span id="remaining"></span>
+  <button type="button" id="clear-btn">Tamamlananları temizle</button>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script src="js/todo-service.js"></script>
+<script src="js/supabase-store.js"></script>
+<script src="js/app.js"></script>
 </body>
 </html>
