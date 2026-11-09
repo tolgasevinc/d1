@@ -1,0 +1,4 @@
+node_modules
+.db-password
+supabase/.temp
+.DS_Store
